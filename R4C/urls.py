@@ -16,6 +16,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
+
+import robots.views
+
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/', robots.views.ApiView),
+    path('api/<int:id>/', robots.views.ApiIdView)
 ]
