@@ -1,9 +1,16 @@
 import json
 
+from datetime import datetime as dt, timedelta
+
 from django.core import serializers
 from django.core.serializers.json import DjangoJSONEncoder
-from django.http import JsonResponse
+from django.db.models import Count
+from django.http import HttpResponse, JsonResponse
+from django.views import View
 from django.views.decorators.csrf import csrf_exempt
+
+from openpyxl import Workbook
+
 from .models import Robot
 
 
@@ -71,3 +78,44 @@ def ApiIdView(request, id):
         Robot.objects.get(id=id).delete()
         data = json.loads(serializers.serialize('json', Robot.objects.all()))
         return JsonResponse(data, encoder=DjangoJSONEncoder, safe=False)
+
+
+class SummaryReportView(View):
+
+    def get(self, request):
+        current_date = dt.now()
+        start_date = current_date - timedelta(days=7)
+
+        robots = Robot.objects.filter(created__gte=start_date
+                                      ).values('model', 'version'
+                                               ).annotate(count=Count('id'))
+
+        wb = Workbook()
+
+        for model_data in robots:
+            model = model_data['model']
+            version = model_data['version']
+            count = model_data['count']
+
+            sheet = (wb[model] if model in wb.sheetnames
+                     else wb.create_sheet(model))
+
+            sheet['A1'] = 'Модель'
+            sheet["B1"] = 'Версия'
+            sheet["C1"] = 'Количество за неделю'
+
+            last_row = sheet.max_row + 1
+
+            sheet.cell(row=last_row, column=1, value=model)
+            sheet.cell(row=last_row, column=2, value=version)
+            sheet.cell(row=last_row, column=3, value=count)
+
+        response = HttpResponse(
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            headers={'Content-Disposition':
+                     'attachment; filename=summary_report.xlsx'
+                     }
+            )
+        wb.save(response)
+
+        return response
