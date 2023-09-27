@@ -12,11 +12,16 @@ def ApiView(request):
     """API-view for requests."""
 
     if request.method == 'GET':
-        data = json.loads(serializers.serialize('json', Robot.objects.all()))
-        for dic in data:
-            del dic['model']
-            del dic['pk']
-        return JsonResponse(data, encoder=DjangoJSONEncoder, safe=False)
+        try:
+            data = json.loads(serializers.serialize('json',
+                                                    Robot.objects.all()))
+            new_data = []
+            for dct in data:
+                new_data.append(dct.get('fields'))
+            return JsonResponse(new_data, encoder=DjangoJSONEncoder,
+                                safe=False)
+        except Exception as e:
+            raise ValueError(f'{e}: the form is not valid.')
 
     if request.method == 'POST':
         body = json.loads(request.body.decode('utf-8'))
@@ -25,8 +30,11 @@ def ApiView(request):
                                         version=body['version'],
                                         created=body['created']
                                         )
-        data = json.loads(serializers.serialize('json', new_item))
-        return JsonResponse(data, encoder=DjangoJSONEncoder, safe=False)
+        try:
+            data = json.loads(serializers.serialize('json', new_item))
+            return JsonResponse(data, encoder=DjangoJSONEncoder, safe=False)
+        except Exception as e:
+            raise ValueError(f'{e}: the form is not valid.')
 
 
 @csrf_exempt
@@ -36,7 +44,11 @@ def ApiIdView(request, id):
     if request.method == 'GET':
         data = json.loads(serializers.serialize('json',
                                                 Robot.objects.filter(id=id)))
-        return JsonResponse(data, encoder=DjangoJSONEncoder, safe=False)
+        new_data = []
+        for dct in data:
+            new_data.append(dct.get('fields'))
+        return JsonResponse(new_data, encoder=DjangoJSONEncoder,
+                            safe=False)
 
     if request.method == 'PUT':
         body = json.loads(request.body.decode('utf-8'))
@@ -49,8 +61,11 @@ def ApiIdView(request, id):
                                      created=body['created']
                                      )
         updated_item = Robot.objects.filter(id=id)
-        data = json.loads(serializers.serialize('json', updated_item))
-        return JsonResponse(data, encoder=DjangoJSONEncoder, safe=False)
+        try:
+            data = json.loads(serializers.serialize('json', updated_item))
+            return JsonResponse(data, encoder=DjangoJSONEncoder, safe=False)
+        except Exception as e:
+            raise ValueError(f'{e}: the form is not valid.')
 
     if request.method == 'DELETE':
         Robot.objects.get(id=id).delete()
