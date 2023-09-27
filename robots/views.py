@@ -81,6 +81,8 @@ def ApiIdView(request, id):
 
 
 class SummaryReportView(View):
+    """Creates Excel spreadsheets with models
+    and versions of robots created in the last week."""
 
     def get(self, request):
         current_date = dt.now()
@@ -101,8 +103,8 @@ class SummaryReportView(View):
                      else wb.create_sheet(model))
 
             sheet['A1'] = 'Модель'
-            sheet["B1"] = 'Версия'
-            sheet["C1"] = 'Количество за неделю'
+            sheet['B1'] = 'Версия'
+            sheet['C1'] = 'Количество за неделю'
 
             last_row = sheet.max_row + 1
 
