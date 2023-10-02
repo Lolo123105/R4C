@@ -25,7 +25,10 @@ SECRET_KEY = 'mztx@x_-=gfhc9xs@bm58m&@3pc7##opo14zob!(l2tus05+jo'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+]
 
 
 # Application definition
@@ -39,7 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'customers',
     'orders',
-    'robots'
+    'robotss'
 ]
 
 MIDDLEWARE = [
@@ -121,3 +124,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
+
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+
+EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+
+EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
